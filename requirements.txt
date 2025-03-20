@@ -1,5 +1,4 @@
 ffmpeg
-libav-tools
 git+https://github.com/openai/whisper.git 
 fastapi==0.95.1
 uvicorn==0.22.0
