@@ -19,3 +19,4 @@ torch
 ffmpeg-python
 pillow
 python-dotenv
+ffmpeg
