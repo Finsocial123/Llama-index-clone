@@ -15,7 +15,7 @@ aiohttp
 youtube-transcript-api
 urllib3
 python-magic
-python-magic-bin
+python-magic-bin==0.4.13
 torch
 ffmpeg-python
 pillow
