@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Q&A Tool</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 800px;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #upload-section, #query-section {
+            margin-bottom: 30px;
+        }
+        #file-info {
+            margin-top: 15px;
+        }
+        #response-container {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            white-space: pre-wrap;
+        }
+        .loading {
+            display: none;
+            margin-top: 10px;
+        }
+        .tab-content {
+            padding: 20px 0;
+        }
+        .nav-tabs {
+            margin-bottom: 20px;
+        }
+        
+        /* Added styles for image preview */
+        #image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            margin-top: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+            display: none;
+        }
+        
+        .content-type-badge {
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        
+        .alert-retry {
+            margin-top: 10px;
+        }
+        
+        .retry-button {
+            margin-left: 10px;
+        }
+        
+        #session-management {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        
+        .session-id {
+            font-family: monospace;
+            background: #e9ecef;
+            padding: 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">Document Q&A Tool</h1>
+        
+        <div id="upload-section">
+            <h3>Step 1: Add Your Document</h3>
+            
+            <ul class="nav nav-tabs" id="documentTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload-pane" 
+                        type="button" role="tab" aria-controls="upload-pane" aria-selected="true">File Upload</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="url-tab" data-bs-toggle="tab" data-bs-target="#url-pane" 
+                        type="button" role="tab" aria-controls="url-pane" aria-selected="false">Any URL</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="dropbox-tab" data-bs-toggle="tab" data-bs-target="#dropbox-pane" 
+                        type="button" role="tab" aria-controls="dropbox-pane" aria-selected="false">Dropbox URL</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="youtube-tab" data-bs-toggle="tab" data-bs-target="#youtube-pane" 
+                        type="button" role="tab" aria-controls="youtube-pane" aria-selected="false">YouTube URL</button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="documentTabContent">
+                <!-- File Upload Tab -->
+                <div class="tab-pane fade show active" id="upload-pane" role="tabpanel" aria-labelledby="upload-tab">
+                    <p>Supported formats: PDF, DOCX, Images (JPEG, PNG), MP3, MP4, HTML, code files, etc.</p>
+                    <form id="upload-form" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <input type="file" class="form-control" id="file-input" name="file">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Upload & Process</button>
+                        <div class="spinner-border text-primary loading" id="upload-loading" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Any URL Tab -->
+                <div class="tab-pane fade" id="url-pane" role="tabpanel" aria-labelledby="url-tab">
+                    <p>Enter any URL to a document you want to analyze.</p>
+                    <form id="generic-url-form">
+                        <div class="mb-3">
+                            <input type="url" class="form-control" id="generic-url" name="url" 
+                                placeholder="https://..." required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Fetch & Process</button>
+                        <div class="spinner-border text-primary loading" id="generic-url-loading" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Dropbox URL Tab -->
+                <div class="tab-pane fade" id="dropbox-pane" role="tabpanel" aria-labelledby="dropbox-tab">
+                    <p>Enter a Dropbox URL to the document you want to analyze.</p>
+                    <form id="dropbox-form">
+                        <div class="mb-3">
+                            <input type="url" class="form-control" id="dropbox-url" name="url" 
+                                placeholder="https://www.dropbox.com/..." required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Fetch & Process</button>
+                        <div class="spinner-border text-primary loading" id="dropbox-loading" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- YouTube URL Tab -->
+                <div class="tab-pane fade" id="youtube-pane" role="tabpanel" aria-labelledby="youtube-tab">
+                    <p>Enter a YouTube URL to analyze the video transcript.</p>
+                    <form id="youtube-form">
+                        <div class="mb-3">
+                            <input type="url" class="form-control" id="youtube-url" name="url" 
+                                placeholder="https://www.youtube.com/watch?v=..." required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Fetch & Process Transcript</button>
+                        <div class="spinner-border text-primary loading" id="youtube-loading" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div id="file-info" class="alert alert-info mt-3" style="display: none;"></div>
+            
+            <!-- Image preview for image files -->
+            <img id="image-preview" class="mt-3" src="" alt="Uploaded image preview" />
+        </div>
+        
+        <div id="query-section" style="display: none;">
+            <h3>Step 2: Ask Questions About the <span id="content-type-text">Document</span></h3>
+            <div class="content-type-badge" id="content-type-badge"></div>
+            
+            <!-- Added API status indicator -->
+            <div id="api-status" class="mb-2"></div>
+            
+            <div class="mb-3">
+                <label for="question-input" class="form-label">Your Question:</label>
+                <input type="text" class="form-control" id="question-input" placeholder="Ask a question about the uploaded content">
+            </div>
+            <button id="submit-question" class="btn btn-success">Ask Question</button>
+            <div class="spinner-border text-success loading" id="query-loading" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            
+            <div id="response-container" style="display: none;">
+                <strong>Answer:</strong>
+                <div id="response-text"></div>
+            </div>
+        </div>
+        
+        <div id="session-management" style="display: none;">
+            <h3>Session Management</h3>
+            <p>Your current session ID: <span class="session-id" id="current-session-id">None</span></p>
+            <p>You can use this session ID to continue your conversation later or from another device.</p>
+            <div class="mb-3">
+                <button id="copy-session-id" class="btn btn-sm btn-outline-secondary">Copy Session ID</button>
+                <button id="create-new-session" class="btn btn-sm btn-outline-primary">Create New Session</button>
+            </div>
+            <div class="mb-3">
+                <label for="load-session-input" class="form-label">Load Existing Session:</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="load-session-input" placeholder="Paste session ID here">
+                    <button id="load-session-btn" class="btn btn-outline-secondary">Load</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Bootstrap JS for tabs -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Store the session ID
+        let sessionId = null;
+        // Track if we're dealing with an image
+        let isImage = false;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadForm = document.getElementById('upload-form');
+            const genericUrlForm = document.getElementById('generic-url-form');
+            const dropboxForm = document.getElementById('dropbox-form');
+            const youtubeForm = document.getElementById('youtube-form');
+            const fileInfo = document.getElementById('file-info');
+            const querySection = document.getElementById('query-section');
+            const questionInput = document.getElementById('question-input');
+            const submitQuestion = document.getElementById('submit-question');
+            const responseContainer = document.getElementById('response-container');
+            const responseText = document.getElementById('response-text');
+            const uploadLoading = document.getElementById('upload-loading');
+            const genericUrlLoading = document.getElementById('generic-url-loading');
+            const dropboxLoading = document.getElementById('dropbox-loading');
+            const youtubeLoading = document.getElementById('youtube-loading');
+            const queryLoading = document.getElementById('query-loading');
+
+            // Check if we have an active session
+            checkSession();
+
+            // Handle file upload
+            uploadForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData();
+                const fileInput = document.getElementById('file-input');
+                
+                if (fileInput.files.length === 0) {
+                    fileInfo.style.display = 'block';
+                    fileInfo.className = 'alert alert-danger mt-3';
+                    fileInfo.textContent = 'Please select a file first';
+                    return;
+                }
+                
+                formData.append('file', fileInput.files[0]);
+                uploadLoading.style.display = 'inline-block';
+                fileInfo.style.display = 'none';
+                
+                processUpload('/upload', formData, uploadLoading);
+            });
+            
+            // Handle generic URL
+            genericUrlForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const genericUrl = document.getElementById('generic-url').value.trim();
+                
+                if (!genericUrl) {
+                    fileInfo.style.display = 'block';
+                    fileInfo.className = 'alert alert-danger mt-3';
+                    fileInfo.textContent = 'Please enter a URL';
+                    return;
+                }
+                
+                genericUrlLoading.style.display = 'inline-block';
+                fileInfo.style.display = 'none';
+                
+                fetch('/process_generic_url', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url: genericUrl }),
+                    credentials: 'include'
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.detail || 'Unknown error occurred');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    genericUrlLoading.style.display = 'none';
+                    fileInfo.className = 'alert alert-success mt-3';
+                    fileInfo.textContent = data.message;
+                    querySection.style.display = 'block';
+                    fileInfo.style.display = 'block';
+                    
+                    // Store the session ID
+                    sessionId = data.session_id;
+                    console.log('Session ID stored:', sessionId);
+                })
+                .catch(error => {
+                    genericUrlLoading.style.display = 'none';
+                    fileInfo.style.display = 'block';
+                    fileInfo.className = 'alert alert-danger mt-3';
+                    fileInfo.textContent = 'Error: ' + error.message;
+                });
+            });
+            
+            // Handle Dropbox URL
+            dropboxForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const dropboxUrl = document.getElementById('dropbox-url').value.trim();
+                
+                if (!dropboxUrl) {
+                    fileInfo.style.display = 'block';
+                    fileInfo.className = 'alert alert-danger mt-3';
+                    fileInfo.textContent = 'Please enter a Dropbox URL';
+                    return;
+                }
+                
+                dropboxLoading.style.display = 'inline-block';
+                fileInfo.style.display = 'none';
+                
+                fetch('/process_dropbox_url', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url: dropboxUrl }),
+                    credentials: 'include'
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.detail || 'Unknown error occurred');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    dropboxLoading.style.display = 'none';
+                    fileInfo.className = 'alert alert-success mt-3';
+                    fileInfo.textContent = data.message;
+                    querySection.style.display = 'block';
+                    fileInfo.style.display = 'block';
+                    
+                    // Store the session ID
+                    sessionId = data.session_id;
+                    console.log('Session ID stored:', sessionId);
+                })
+                .catch(error => {
+                    dropboxLoading.style.display = 'none';
+                    fileInfo.style.display = 'block';
+                    fileInfo.className = 'alert alert-danger mt-3';
+                    fileInfo.textContent = 'Error: ' + error.message;
+                });
+            });
+            
+            // Handle YouTube URL
+            youtubeForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const youtubeUrl = document.getElementById('youtube-url').value.trim();
+                
+                if (!youtubeUrl) {
+                    fileInfo.style.display = 'block';
+                    fileInfo.className = 'alert alert-danger mt-3';
+                    fileInfo.textContent = 'Please enter a YouTube URL';
+                    return;
+                }
+                
+                youtubeLoading.style.display = 'inline-block';
+                fileInfo.style.display = 'none';
+                
+                fetch('/process_youtube_url', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url: youtubeUrl }),
+                    credentials: 'include'
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.detail || 'Unknown error occurred');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    youtubeLoading.style.display = 'none';
+                    fileInfo.className = 'alert alert-success mt-3';
+                    fileInfo.textContent = data.message;
+                    querySection.style.display = 'block';
+                    fileInfo.style.display = 'block';
+                    
+                    // Store the session ID
+                    sessionId = data.session_id;
+                    console.log('Session ID stored:', sessionId);
+                })
+                .catch(error => {
+                    youtubeLoading.style.display = 'none';
+                    fileInfo.style.display = 'block';
+                    fileInfo.className = 'alert alert-danger mt-3';
+                    fileInfo.textContent = 'Error: ' + error.message;
+                });
+            });
+            
+            // File input change handler to show image preview
+            document.getElementById('file-input').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                const imagePreview = document.getElementById('image-preview');
+                
+                // Hide any existing preview
+                imagePreview.style.display = 'none';
+                
+                if (file && file.type.startsWith('image/')) {
+                    // Show image preview for image files
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        imagePreview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Process file upload - common function for both methods
+            function processUpload(endpoint, formData, loadingIndicator) {
+                fetch(endpoint, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.detail || 'Unknown error occurred');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    loadingIndicator.style.display = 'none';
+                    fileInfo.className = 'alert alert-success mt-3';
+                    fileInfo.textContent = data.message;
+                    querySection.style.display = 'block';
+                    fileInfo.style.display = 'block';
+                    
+                    // Store the session ID
+                    sessionId = data.session_id;
+                    console.log('Session ID stored:', sessionId);
+                    
+                    // Check if this is an image file
+                    isImage = data.content_preview && data.content_preview.startsWith('IMAGE_FILE:');
+                    
+                    // Update UI based on content type
+                    if (isImage) {
+                        document.getElementById('content-type-text').textContent = 'Image';
+                        document.getElementById('content-type-badge').innerHTML = 
+                            '<span class="badge bg-info">Image File</span>';
+                    } else if (data.content_preview && data.content_preview.includes('Transcription of')) {
+                        document.getElementById('content-type-text').textContent = 'Audio/Video';
+                        document.getElementById('content-type-badge').innerHTML = 
+                            '<span class="badge bg-info">Audio/Video File</span>';
+                    } else {
+                        document.getElementById('content-type-text').textContent = 'Document';
+                        document.getElementById('content-type-badge').innerHTML = 
+                            '<span class="badge bg-info">Document</span>';
+                    }
+                })
+                .catch(error => {
+                    loadingIndicator.style.display = 'none';
+                    fileInfo.style.display = 'block';
+                    fileInfo.className = 'alert alert-danger mt-3';
+                    fileInfo.textContent = 'Error: ' + error.message;
+                });
+            }
+            
+            // Question submission handler
+            submitQuestion.addEventListener('click', function() {
+                const question = questionInput.value.trim();
+                
+                if (!question) {
+                    alert('Please enter a question');
+                    return;
+                }
+                
+                queryLoading.style.display = 'inline-block';
+                responseContainer.style.display = 'none';
+                
+                // Check session before sending query
+                checkSessionBeforeQuery(question);
+            });
+            
+            // Function to check if we have an active session
+            function checkSession() {
+                fetch('/check_session', {
+                    method: 'GET',
+                    credentials: 'include'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Session check:', data);
+                    if (data.status === 'active') {
+                        sessionId = data.session_id;
+                        updateSessionDisplay();
+                        // If we have an active session, show the query section
+                        querySection.style.display = 'block';
+                        fileInfo.style.display = 'block';
+                        fileInfo.className = 'alert alert-info';
+                        fileInfo.textContent = 'Previous session restored. You can ask questions about the uploaded file.';
+                    }
+                })
+                .catch(error => {
+                    console.error('Session check error:', error);
+                });
+            }
+            
+            // Function to check session before sending a query
+            function checkSessionBeforeQuery(question) {
+                fetch('/check_session', {
+                    method: 'GET',
+                    credentials: 'include'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'active') {
+                        // Session is active, send the query
+                        sendQuery(question);
+                    } else {
+                        // Session expired, show error
+                        queryLoading.style.display = 'none';
+                        alert('Your session has expired. Please upload the file again.');
+                        querySection.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Session check error:', error);
+                    queryLoading.style.display = 'none';
+                    alert('Error checking session. Please try again.');
+                });
+            }
+            
+            // Function to send the query with improved error handling
+            function sendQuery(question) {
+                const abortController = new AbortController();
+                const timeoutId = setTimeout(() => abortController.abort(), 120000); // 2 minute timeout
+                
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                // Add session ID to headers if available
+                if (sessionId) {
+                    headers['X-Session-ID'] = sessionId;
+                }
+                
+                fetch('/query', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({ question: question }),
+                    credentials: 'include',
+                    signal: abortController.signal
+                })
+                .then(response => {
+                    clearTimeout(timeoutId);
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.detail || 'Unknown error occurred');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    queryLoading.style.display = 'none';
+                    responseContainer.style.display = 'block';
+                    responseText.textContent = data.response;
+                })
+                .catch(error => {
+                    queryLoading.style.display = 'none';
+                    responseContainer.style.display = 'block';
+                    
+                    // Show error with retry button
+                    let errorMessage = 'Error: ' + error.message;
+                    if (error.name === 'AbortError') {
+                        errorMessage = 'The request timed out. Please try again with a shorter question.';
+                    } else if (error.message.includes('Failed to fetch')) {
+                        errorMessage = 'Failed to connect to the server. Please check your internet connection and try again.';
+                    }
+                    
+                    responseText.innerHTML = `
+                        <div class="alert alert-danger">${errorMessage}</div>
+                        <div class="alert alert-retry">
+                            <button class="btn btn-sm btn-warning retry-button" id="retry-question">Try Again</button>
+                        </div>
+                    `;
+                    
+                    // Add event listener to retry button
+                    document.getElementById('retry-question')?.addEventListener('click', function() {
+                        responseContainer.style.display = 'none';
+                        queryLoading.style.display = 'inline-block';
+                        sendQuery(question);
+                    });
+                    
+                    // Check if the API is healthy
+                    checkAPIHealth();
+                });
+            }
+            
+            // Add API health check on page load
+            checkAPIHealth();
+            
+            // Add periodic health checks (every 60 seconds)
+            setInterval(checkAPIHealth, 60000);
+            
+            // Function to check API health
+            function checkAPIHealth() {
+                fetch('/api/health')
+                    .then(response => response.json())
+                    .then(data => {
+                        const apiStatus = document.getElementById('api-status');
+                        if (data.ollama_api && data.ollama_api.status === 'up') {
+                            apiStatus.innerHTML = '<span class="badge bg-success">API Connected</span>';
+                        } else {
+                            apiStatus.innerHTML = '<span class="badge bg-danger">API Disconnected</span> <small>The Q&A service might be unavailable.</small>';
+                        }
+                    })
+                    .catch(error => {
+                        document.getElementById('api-status').innerHTML = 
+                            '<span class="badge bg-warning">API Status Unknown</span>';
+                        console.error('Health check error:', error);
+                    });
+            }
+            
+            // Session management elements
+            const sessionManagement = document.getElementById('session-management');
+            const currentSessionIdSpan = document.getElementById('current-session-id');
+            const copySessionIdBtn = document.getElementById('copy-session-id');
+            const createNewSessionBtn = document.getElementById('create-new-session');
+            const loadSessionInput = document.getElementById('load-session-input');
+            const loadSessionBtn = document.getElementById('load-session-btn');
+            
+            // Update UI to show session ID when available
+            function updateSessionDisplay() {
+                if (sessionId) {
+                    sessionManagement.style.display = 'block';
+                    currentSessionIdSpan.textContent = sessionId;
+                } else {
+                    sessionManagement.style.display = 'none';
+                }
+            }
+            
+            // Copy session ID to clipboard
+            copySessionIdBtn.addEventListener('click', function() {
+                if (sessionId) {
+                    navigator.clipboard.writeText(sessionId)
+                        .then(() => {
+                            alert('Session ID copied to clipboard');
+                        })
+                        .catch(err => {
+                            console.error('Could not copy text: ', err);
+                        });
+                }
+            });
+            
+            // Create new session
+            createNewSessionBtn.addEventListener('click', function() {
+                fetch('/api/create_session', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    sessionId = data.session_id;
+                    updateSessionDisplay();
+                    alert('New session created. Upload a document to begin.');
+                    
+                    // Clear any existing data
+                    responseContainer.style.display = 'none';
+                    fileInfo.style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('Error creating new session:', error);
+                });
+            });
+            
+            // Load existing session
+            loadSessionBtn.addEventListener('click', function() {
+                const inputSessionId = loadSessionInput.value.trim();
+                if (!inputSessionId) {
+                    alert('Please enter a session ID');
+                    return;
+                }
+                
+                // Check if session exists
+                fetch(`/api/session/${inputSessionId}/status`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'active') {
+                            sessionId = inputSessionId;
+                            updateSessionDisplay();
+                            querySection.style.display = 'block';
+                            fileInfo.style.display = 'block';
+                            fileInfo.className = 'alert alert-info';
+                            fileInfo.textContent = 'Session loaded. You can ask questions about the uploaded file.';
+                        } else {
+                            alert('Session not found or expired');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading session:', error);
+                        alert('Error checking session status');
+                    });
+            });
+            
+            // Call initial session update
+            updateSessionDisplay();
+        });
+    </script>
+</body>
+</html>

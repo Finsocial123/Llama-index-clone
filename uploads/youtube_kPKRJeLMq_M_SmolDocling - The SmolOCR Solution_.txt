@@ -1,0 +1,203 @@
+[00:00] okay so a new week has come and yet
+[00:02] another OCR model is here so this time
+[00:05] this is kind of an interesting model
+[00:07] that comes out of hugging face and I
+[00:08] think they've partnered with IBM on this
+[00:11] so this is small dockling so if you've
+[00:14] seen Huging Place has made a whole bunch
+[00:16] of what they call small models generally
+[00:18] these are really tiny sort of around the
+[00:20] 1B or under kind of size and it's
+[00:23] basically a document understanding model
+[00:26] not just purely OCR and it's only 256
+[00:29] million parameters so the advantage here
+[00:31] that this has got is that it can run on
+[00:33] GPUs that don't have a lot of VRAM but
+[00:36] in my early playing around with it it
+[00:38] still seems to me that you actually
+[00:39] still do need a GPU to actually get this
+[00:42] working so it's interesting here that
+[00:44] they talk not just about OCR but around
+[00:47] the whole idea of document conversion
+[00:50] and they claim that this is beating
+[00:52] every competing model we tested up to
+[00:55] 27x and that to me sounded really
+[00:57] impressive until I came in and looked at
+[00:59] the actual models that they're testing
+[01:02] don't include things like M LCR don't
+[01:04] include things like the Mistral OCR etc
+[01:07] obviously you're not going to include
+[01:08] other proprietary models like Gemini or
+[01:11] the Open AI models etc so it really does
+[01:14] seem to me that this is an interesting
+[01:15] model especially when comparing to other
+[01:18] small or tiny sort of VLMs for doing
+[01:22] this particular task and also
+[01:25] interesting in that they've created this
+[01:27] not just for doing OCR but perhaps in
+[01:31] many ways for doing document conversion
+[01:32] and document understanding okay so the
+[01:35] original dockling project is also a
+[01:38] really interesting project in that this
+[01:40] is again not just OCR but for doing
+[01:44] extraction from documents and you can
+[01:46] see that they're supporting a whole
+[01:48] bunch of different documents from not
+[01:50] just things like PDFs but Microsoft Word
+[01:52] files HTML images etc and the idea here
+[01:56] is that the small dockling is basically
+[01:59] continuing that with just a small VLM
+[02:02] type model in here all right so they've
+[02:05] released a paper so if we look at the
+[02:07] architecture that they've got in here
+[02:09] we've got a standard sort of VLM
+[02:11] architecture and we can actually see
+[02:13] that basically they've based this on the
+[02:15] small VLM architecture so I think that's
+[02:18] basically they're using a sig lip vision
+[02:20] encoder of 93 million parameters and
+[02:24] then also the small LM model which is
+[02:27] 135 million parameters and then
+[02:29] obviously that combined with their
+[02:30] projection layers gets them up around
+[02:32] this 256 million parameter size so if we
+[02:36] look at one of the diagrams in the paper
+[02:38] we can see that they're not just going
+[02:40] for OCR they're actually giving us
+[02:42] locations and what they're calling this
+[02:45] sort of dock tags format and this is
+[02:47] basically describing the elements of
+[02:49] whether it's a text element a picture a
+[02:52] table code etc and then also actually
+[02:55] where it is on the page and then doing
+[02:59] the OCR out so if you look in here we
+[03:02] can see that when we get lists of things
+[03:04] we're actually getting almost like an
+[03:06] HTML structure coming out of this of
+[03:08] where it's showing it this is a list
+[03:10] item what the location is and then we've
+[03:13] got the OCR coming out of this so I do
+[03:16] kind of feel this is something that
+[03:18] you'd probably then take and you could
+[03:20] even then feed it into another LLM to
+[03:23] get it to tidy it up etc all right so
+[03:25] the model is up on Hugging Face if you
+[03:27] want to try it out they've also updated
+[03:30] their post on the small VLMs to
+[03:34] basically add this in here as well which
+[03:36] is something that they've been working
+[03:37] on for a while there a whole bunch of
+[03:39] these small LLMs and VLMs in here now
+[03:43] when we look at the model card they talk
+[03:44] a bit more about the whole sort of dock
+[03:46] tag stuff and show us that like okay you
+[03:49] can actually get variety of different
+[03:51] things out of the docs so things like
+[03:53] code recognition formula recognition
+[03:56] tables charts so one of the things you
+[03:58] can do is then process those things out
+[04:01] and then use custom models to actually
+[04:03] extract information out of those so
+[04:06] currently you can run it using the
+[04:08] transformers library or you can run it
+[04:10] using the VLM library for faster batch
+[04:13] inference as well and in here we can see
+[04:16] like some of the instructions that it's
+[04:17] actually being trained with to extract
+[04:20] things like charts out formulas tables
+[04:24] and of course to be able to extract out
+[04:25] the text itself as well okay so they've
+[04:28] got a demo up where you can try these
+[04:30] out and if I come in here and let me
+[04:33] just bring up the image that it's going
+[04:36] to be processing you can see this is the
+[04:39] image that it's going to go through
+[04:41] where it's basically got some normal
+[04:43] text it's then got the code blocks again
+[04:47] then it's got some normal text and it's
+[04:49] got some other sort of outputs so we're
+[04:53] looking to see how does it handle all of
+[04:56] this code I guess as well as this okay
+[04:59] so we can see that it starts off with
+[05:01] the markdown output and it looks pretty
+[05:03] nice right the way it's done that
+[05:05] looking at it it's processed all of this
+[05:09] as a code block it's missed going back
+[05:13] there so it didn't go back to get that
+[05:16] one and sort of continue it basically
+[05:18] just went right on through there all
+[05:20] right let's try another one so this time
+[05:22] we've given it a whole chart and we're
+[05:25] asking it to convert the chart and just
+[05:27] looking at the chart we can see that
+[05:29] there's a bunch of stuff in there we can
+[05:31] see that it's gone through it's worked
+[05:34] out it's worked out a bunch of
+[05:36] information but I wouldn't say that it's
+[05:37] necessarily any easier for reading in
+[05:40] here let's try one more okay here we can
+[05:43] see that it's basically extracting out
+[05:46] different elements of basically a logo
+[05:48] or picture it's saying for the top bit
+[05:51] there but it is able to get out
+[05:54] different sort of text by the looks of
+[05:56] this so this seems to be in French and I
+[05:58] kind of feel that the real advantage of
+[06:00] a model like this is not going to be as
+[06:03] a general OCR model i think looking at
+[06:06] playing with these demos is that the
+[06:08] real advantage of something like this is
+[06:10] going to be when you fine-tune it that
+[06:14] for most sort of tasks that people end
+[06:17] up doing usually if you've got a very
+[06:19] specific kind of task that you wanted to
+[06:21] do you're going to find that the inputs
+[06:24] are going to be reasonably similar
+[06:25] meaning that they're all going to be
+[06:27] receipts they're all going to be some
+[06:29] kind of thing and I kind of feel like if
+[06:31] you put the effort in it looks like
+[06:33] we've run into some GPU errors there but
+[06:36] I kind of feel if you've put the effort
+[06:37] in to making your own sort of labeled
+[06:41] data set you're able then to fine-tune
+[06:44] this model to do really well at the
+[06:46] tasks that you want it to do so overall
+[06:49] playing with it in the demos trying it
+[06:51] on a few examples of my own it certainly
+[06:54] is not a state-of-the-art OCR model in
+[06:57] general it's probably state-of-the-art
+[06:59] for its size and for what it's doing but
+[07:02] I kind of feel like that's not the key
+[07:04] point here i think the real key point
+[07:06] here is that this is a really
+[07:08] interesting model at this idea of
+[07:10] document extraction and document
+[07:11] conversion and I kind of feel that with
+[07:14] its size being so small it really lends
+[07:17] itself to you fine-tuning it for your
+[07:20] specific task in here so Hugging Face
+[07:23] already has some scripts up for doing
+[07:25] the finetunes of the small VLM my guess
+[07:29] is that these can be repurposed pretty
+[07:30] simply to do this kind of specialized
+[07:33] OCR task as well as long as you put in
+[07:36] the effort and make some of the data
+[07:38] yourself all right overall I don't think
+[07:40] this is necessarily going to replace M O
+[07:42] OCR or things like the Mistral OCR
+[07:45] Gemini etc for these general OCR tasks
+[07:50] but I do think this can be very useful
+[07:52] for making your own document conversion
+[07:54] pipeline and maybe that's something I'll
+[07:56] look at in a future video anyway if
+[07:58] you've got any questions as always
+[08:00] please put them in the comments below
+[08:01] i'd love to hear what you think have you
+[08:03] tried it out yourself what you're seeing
+[08:05] that it works well for what do you see
+[08:07] that it's not working well for let me
+[08:09] know in the comments below and as always
+[08:11] if you found the video useful please
+[08:12] click like and subscribe and I will talk
+[08:14] to you in the next video
